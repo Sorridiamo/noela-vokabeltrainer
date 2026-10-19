@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Noelas Vokabeltrainer – The Head</title>
+<style>
+/* Vokabeltrainer – schlichtes, ruhiges Design */
+
+:root {
+  --bg: #f7f7f5;
+  --card-bg: #ffffff;
+  --text: #2b2b2b;
+  --muted: #767676;
+  --accent: #3a6ea5;
+  --accent-dark: #2c547f;
+  --good: #3f8f5f;
+  --good-bg: #e4f3e9;
+  --warn-bg: #f6e8d7;
+  --warn-text: #8a5a1e;
+  --border: #e2e2e0;
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; }
+
+.hidden { display: none; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  justify-content: center;
+}
+
+#app {
+  width: 100%;
+  max-width: 480px;
+  min-height: 100vh;
+  padding: 28px 20px 40px;
+}
+
+.screen.hidden { display: none; }
+
+h1 {
+  font-size: 26px;
+  font-weight: 600;
+  margin: 0 0 4px;
+  text-align: center;
+}
+
+.subtitle {
+  text-align: center;
+  color: var(--muted);
+  margin: 0 0 28px;
+  font-size: 15px;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+  margin: 6px 0 0;
+}
+
+.setting-group {
+  margin-bottom: 22px;
+}
+
+.setting-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.choice-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.choice {
+  flex: 1 1 auto;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.choice.selected {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.switch-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--text);
+}
+
+.switch-row input { width: 18px; height: 18px; }
+
+button.primary, button.secondary {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  margin-top: 12px;
+  border-radius: var(--radius);
+  border: none;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button.primary {
+  background: var(--accent);
+  color: #fff;
+}
+button.primary:active { background: var(--accent-dark); }
+
+button.secondary {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+button.link {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 14px;
+  text-decoration: underline;
+  cursor: pointer;
+  display: block;
+  margin: 16px auto 0;
+}
+
+.progress-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 28px 22px;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+
+.prompt-label {
+  font-size: 13px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 8px;
+}
+
+.prompt-word {
+  font-size: 30px;
+  font-weight: 600;
+  margin: 0 0 24px;
+}
+
+#answer-input {
+  width: 100%;
+  padding: 14px;
+  font-size: 18px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  text-align: center;
+}
+
+.feedback {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 15px;
+}
+.feedback.hidden { display: none; }
+.feedback.correct { background: var(--good-bg); color: var(--good); }
+.feedback.wrong { background: var(--warn-bg); color: var(--warn-text); }
+
+.btn-row button { margin-top: 18px; }
+.btn-row .hidden { display: none; }
+.btn-row .choice-row.hidden { display: none; }
+.btn-row .choice-row { margin-top: 18px; }
+
+.prompt-word.solution {
+  color: var(--accent);
+  margin-top: -8px;
+  margin-bottom: 24px;
+}
+
+#rate-row .choice { flex: 1; }
+#btn-rate-correct.choice { border-color: var(--good); color: var(--good); }
+#btn-rate-wrong.choice { border-color: var(--warn-text); color: var(--warn-text); }
+
+.result-stats {
+  display: flex;
+  gap: 12px;
+  margin: 20px 0 28px;
+}
+.stat-box {
+  flex: 1;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  text-align: center;
+}
+.stat-value { display: block; font-size: 28px; font-weight: 700; }
+.stat-label { color: var(--muted); font-size: 13px; }
+
+.stats-list {
+  margin: 18px 0;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.stats-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.stats-word { flex: 1; }
+.stats-word small { display: block; color: var(--muted); font-size: 12px; }
+
+.badge {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.badge.good { background: var(--good-bg); color: var(--good); }
+.badge.warn { background: var(--warn-bg); color: var(--warn-text); }
+.badge.neutral { background: #ececea; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- START / EINSTELLUNGEN -->
+  <section id="screen-start" class="screen">
+    <h1>Vokabeltrainer</h1>
+    <p class="subtitle">The Head – Englisch in der Apotheke</p>
+
+    <div class="setting-group">
+      <label>Richtung</label>
+      <div class="choice-row">
+        <button class="choice" data-dir="de-en">Deutsch → Englisch</button>
+        <button class="choice" data-dir="en-de">Englisch → Deutsch</button>
+        <button class="choice" data-dir="mix">Gemischt</button>
+      </div>
+    </div>
+
+    <div class="setting-group">
+      <label>Welche Wörter?</label>
+      <div class="choice-row">
+        <button class="choice" data-scope="all">Alle Wörter (90)</button>
+        <button class="choice" data-scope="weak">Nur schwache Wörter</button>
+      </div>
+      <p id="weak-count" class="hint"></p>
+    </div>
+
+    <div class="setting-group">
+      <label>Übungsart</label>
+      <div class="choice-row">
+        <button class="choice" data-mode="input">Antwort schreiben</button>
+        <button class="choice" data-mode="reveal">Karteikarte (Lösung anzeigen)</button>
+      </div>
+    </div>
+
+    <div class="setting-group">
+      <label class="switch-row">
+        <input type="checkbox" id="repeat-wrong" checked>
+        <span>Falsche Wörter nochmals fragen</span>
+      </label>
+    </div>
+
+    <button id="btn-start" class="primary">Start</button>
+    <button id="btn-stats" class="secondary">Statistik anzeigen</button>
+  </section>
+
+  <!-- QUIZ -->
+  <section id="screen-quiz" class="screen hidden">
+    <div class="progress-row">
+      <span id="progress-label"></span>
+      <button id="btn-quit" class="link">Beenden</button>
+    </div>
+
+    <div class="card">
+      <p class="prompt-label" id="prompt-label"></p>
+      <p class="prompt-word" id="prompt-word"></p>
+
+      <input type="text" id="answer-input" autocomplete="off" placeholder="Antwort eingeben...">
+
+      <p id="solution-word" class="prompt-word solution hidden"></p>
+
+      <div id="feedback" class="feedback hidden"></div>
+
+      <div class="btn-row">
+        <button id="btn-check" class="primary">Prüfen</button>
+        <button id="btn-reveal" class="primary hidden">Lösung anzeigen</button>
+        <div id="rate-row" class="choice-row hidden">
+          <button id="btn-rate-wrong" class="choice">Wusste ich nicht</button>
+          <button id="btn-rate-correct" class="choice">Wusste ich</button>
+        </div>
+        <button id="btn-next" class="primary hidden">Weiter</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ERGEBNIS -->
+  <section id="screen-result" class="screen hidden">
+    <h1>Fertig!</h1>
+    <div class="result-stats">
+      <div class="stat-box">
+        <span class="stat-value" id="result-correct">0</span>
+        <span class="stat-label">Richtig</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-value" id="result-wrong">0</span>
+        <span class="stat-label">Falsch</span>
+      </div>
+    </div>
+    <button id="btn-again" class="primary">Nochmal</button>
+    <button id="btn-home" class="secondary">Zurück zum Start</button>
+  </section>
+
+  <!-- STATISTIK -->
+  <section id="screen-stats" class="screen hidden">
+    <h1>Statistik</h1>
+    <p class="hint">Kumuliert über alle Versuche. Erfolgsquote je Wort.</p>
+    <div id="stats-list" class="stats-list"></div>
+    <button id="btn-stats-back" class="secondary">Zurück</button>
+    <button id="btn-reset-stats" class="link">Statistik zurücksetzen</button>
+  </section>
+
+</div>
+
+<script>
+// Vokabelliste: "The Head" (Englisch in der Apotheke)
+const WORDS = [
+  { id: 1, de: "Kopf", en: "head" },
+  { id: 2, de: "bestehen aus", en: "consist of" },
+  { id: 3, de: "Gesicht", en: "face" },
+  { id: 4, de: "Schädel", en: "skull" },
+  { id: 5, de: "Haar", en: "hair" },
+  { id: 6, de: "hell, gerecht", en: "fair" },
+  { id: 7, de: "dunkel", en: "dark" },
+  { id: 8, de: "dick", en: "thick" },
+  { id: 9, de: "entweder...oder", en: "either...or" },
+  { id: 10, de: "glatt, gerade", en: "straight" },
+  { id: 11, de: "Scheitel", en: "parting" },
+  { id: 12, de: "lockig", en: "curly" },
+  { id: 13, de: "dünn", en: "thin" },
+  { id: 14, de: "glatzköpfig", en: "bald" },
+  { id: 15, de: "in(nerhalb)", en: "inside" },
+  { id: 16, de: "Gehirn", en: "brain" },
+  { id: 17, de: "Koordinationszentrum", en: "coordinating centre" },
+  { id: 18, de: "Nervensystem", en: "nervous system" },
+  { id: 19, de: "Seite", en: "side" },
+  { id: 20, de: "kontrollieren, Kontrolle", en: "control" },
+  { id: 21, de: "gegenüberliegend", en: "opposite" },
+  { id: 22, de: "Körper", en: "body" },
+  { id: 23, de: "unter", en: "beneath, underneath" },
+  { id: 24, de: "Haaransatz", en: "hair-line" },
+  { id: 25, de: "zwischen", en: "between" },
+  { id: 26, de: "Schläfe", en: "temple" },
+  { id: 27, de: "Stirn", en: "forehead" },
+  { id: 28, de: "sehen - sah - gesehen", en: "see - saw - seen" },
+  { id: 29, de: "Auge", en: "eye" },
+  { id: 30, de: "Augenlid", en: "eyelid" },
+  { id: 31, de: "Wimpern", en: "eyelashes" },
+  { id: 32, de: "Augenbraue", en: "eyebrow" },
+  { id: 33, de: "schützen", en: "protect" },
+  { id: 34, de: "kurzsichtig", en: "short-sighted" },
+  { id: 35, de: "weitsichtig", en: "long-sighted, far-sighted" },
+  { id: 36, de: "Brille", en: "glasses" },
+  { id: 37, de: "blind", en: "blind" },
+  { id: 38, de: "Nase", en: "nose" },
+  { id: 39, de: "Nasenloch", en: "nostril" },
+  { id: 40, de: "Geruchsorgan", en: "organ of smell" },
+  { id: 41, de: "wichtig", en: "important" },
+  { id: 42, de: "Geschmackssinn", en: "sense of taste" },
+  { id: 43, de: "lang", en: "long" },
+  { id: 44, de: "spitz", en: "pointed" },
+  { id: 45, de: "Adlernase", en: "aquiline nose" },
+  { id: 46, de: "Stupsnase", en: "snub nose" },
+  { id: 47, de: "Mund", en: "mouth" },
+  { id: 48, de: "Anfang", en: "beginning" },
+  { id: 49, de: "Verdauungskanal", en: "alimentary canal" },
+  { id: 50, de: "schliessen", en: "close" },
+  { id: 51, de: "obere", en: "upper" },
+  { id: 52, de: "untere", en: "lower" },
+  { id: 53, de: "Lippe", en: "lip" },
+  { id: 54, de: "Zahn - Zähne", en: "tooth - teeth" },
+  { id: 55, de: "Kiefer", en: "jaw" },
+  { id: 56, de: "bedecken", en: "cover" },
+  { id: 57, de: "Zahnfleisch", en: "gum" },
+  { id: 58, de: "Zunge", en: "tongue" },
+  { id: 59, de: "Essen", en: "food" },
+  { id: 60, de: "Organ", en: "organ" },
+  { id: 61, de: "Gaumen", en: "palate" },
+  { id: 62, de: "Geschmacksknospen", en: "taste buds" },
+  { id: 63, de: "schlucken", en: "to swallow" },
+  { id: 64, de: "Ohr", en: "ear" },
+  { id: 65, de: "hören", en: "hear - heard - heard" },
+  { id: 66, de: "Trommelfell", en: "eardrum" },
+  { id: 67, de: "beschädigen, Schaden", en: "damage" },
+  { id: 68, de: "taub", en: "deaf" },
+  { id: 69, de: "sprechen - sprach - gesprochen", en: "speak - spoke - spoken" },
+  { id: 70, de: "stumm", en: "mute" },
+  { id: 71, de: "taubstumm", en: "deaf-mute" },
+  { id: 72, de: "sich verständigen, kommunizieren", en: "communicate" },
+  { id: 73, de: "Zeichen", en: "sign" },
+  { id: 74, de: "Innenohr", en: "inner ear" },
+  { id: 75, de: "Gleichgewichtsorgan", en: "organ of balance" },
+  { id: 76, de: "unter", en: "below" },
+  { id: 77, de: "Kinn", en: "chin" },
+  { id: 78, de: "wachsen", en: "grow - grew - grown" },
+  { id: 79, de: "Bart", en: "beard" },
+  { id: 80, de: "Schnurrbart", en: "moustache" },
+  { id: 81, de: "jedoch", en: "however" },
+  { id: 82, de: "bevorzugen", en: "prefer" },
+  { id: 83, de: "glattrasiert", en: "clean-shaven" },
+  { id: 84, de: "Gaumenzäpfchen", en: "uvula" },
+  { id: 85, de: "Wange", en: "cheek" },
+  { id: 86, de: "Augenhöhle", en: "eye-socket" },
+  { id: 87, de: "Augenwinkel", en: "corner of the eye" },
+  { id: 88, de: "Augapfel", en: "eyeball" },
+  { id: 89, de: "Iris", en: "iris" },
+  { id: 90, de: "Pupille, Schüler", en: "pupil" },
+];
+
+// --- Statistik-Verwaltung (kumuliert, persistiert in localStorage) ---
+const STATS_KEY = "noela_vocab_stats_v1";
+
+function loadStats() {
+  try {
+    const raw = localStorage.getItem(STATS_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function saveStats(stats) {
+  localStorage.setItem(STATS_KEY, JSON.stringify(stats));
+}
+
+function recordAttempt(stats, wordId, correct) {
+  const key = String(wordId);
+  if (!stats[key]) {
+    stats[key] = { attempts: 0, correct: 0, wrong: 0 };
+  }
+  stats[key].attempts += 1;
+  if (correct) {
+    stats[key].correct += 1;
+  } else {
+    stats[key].wrong += 1;
+  }
+  saveStats(stats);
+}
+
+function successRate(stats, wordId) {
+  const s = stats[String(wordId)];
+  if (!s || s.attempts === 0) return null;
+  return s.correct / s.attempts;
+}
+
+const WEAK_THRESHOLD = 0.6;
+
+function isWeak(stats, wordId) {
+  const rate = successRate(stats, wordId);
+  if (rate === null) return true;
+  return rate < WEAK_THRESHOLD;
+}
+
+function weakWords(stats, words) {
+  return words.filter((w) => isWeak(stats, w.id));
+}
+
+function resetStats() {
+  localStorage.removeItem(STATS_KEY);
+}
+
+// --- Bildschirmsteuerung ---
+const screens = {
+  start: document.getElementById("screen-start"),
+  quiz: document.getElementById("screen-quiz"),
+  result: document.getElementById("screen-result"),
+  stats: document.getElementById("screen-stats"),
+};
+
+function showScreen(name) {
+  Object.values(screens).forEach((s) => s.classList.add("hidden"));
+  screens[name].classList.remove("hidden");
+}
+
+let stats = loadStats();
+
+// --- Einstellungen (Start-Bildschirm) ---
+let settings = { direction: "de-en", scope: "all", mode: "input", repeatWrong: true };
+
+function wireChoiceButtons(selector, settingKey, datasetAttr) {
+  document.querySelectorAll(selector).forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(selector).forEach((b) => b.classList.remove("selected"));
+      btn.classList.add("selected");
+      settings[settingKey] = btn.dataset[datasetAttr];
+    });
+  });
+}
+wireChoiceButtons("[data-dir]", "direction", "dir");
+wireChoiceButtons("[data-scope]", "scope", "scope");
+wireChoiceButtons("[data-mode]", "mode", "mode");
+document.querySelector('[data-dir="de-en"]').classList.add("selected");
+document.querySelector('[data-scope="all"]').classList.add("selected");
+document.querySelector('[data-mode="input"]').classList.add("selected");
+
+function updateWeakCount() {
+  const n = weakWords(stats, WORDS).length;
+  document.getElementById("weak-count").textContent =
+    n > 0 ? `${n} schwache Wörter aktuell` : "Keine schwachen Wörter – alles sitzt gut!";
+}
+updateWeakCount();
+
+document.getElementById("btn-start").addEventListener("click", startQuiz);
+document.getElementById("btn-stats").addEventListener("click", () => {
+  renderStats();
+  showScreen("stats");
+});
+
+document.getElementById("btn-again").addEventListener("click", () => showScreen("start"));
+document.getElementById("btn-home").addEventListener("click", () => {
+  updateWeakCount();
+  showScreen("start");
+});
+
+// --- Statistik-Bildschirm ---
+function renderStats() {
+  const list = document.getElementById("stats-list");
+  list.innerHTML = "";
+  const sorted = WORDS.slice().sort((a, b) => {
+    const ra = successRate(stats, a.id);
+    const rb = successRate(stats, b.id);
+    return (ra === null ? -1 : ra) - (rb === null ? -1 : rb);
+  });
+  sorted.forEach((w) => {
+    const rate = successRate(stats, w.id);
+    const row = document.createElement("div");
+    row.className = "stats-row";
+    const label = document.createElement("div");
+    label.className = "stats-word";
+    label.innerHTML = `${w.de}<small>${w.en}</small>`;
+    const badge = document.createElement("span");
+    if (rate === null) {
+      badge.className = "badge neutral";
+      badge.textContent = "noch nicht geübt";
+    } else {
+      const pct = Math.round(rate * 100);
+      badge.className = "badge " + (rate < WEAK_THRESHOLD ? "warn" : "good");
+      badge.textContent = `${pct}%`;
+    }
+    row.appendChild(label);
+    row.appendChild(badge);
+    list.appendChild(row);
+  });
+}
+
+document.getElementById("btn-stats-back").addEventListener("click", () => showScreen("start"));
+document.getElementById("btn-reset-stats").addEventListener("click", () => {
+  if (confirm("Statistik wirklich zurücksetzen?")) {
+    resetStats();
+    stats = loadStats();
+    updateWeakCount();
+    renderStats();
+  }
+});
+
+// --- Quiz-Zustand ---
+let quizQueue = [];
+let currentItem = null;
+let correctCount = 0;
+let wrongCount = 0;
+let totalPlanned = 0;
+let repeatWrong = true;
+
+function pickDirectionFor() {
+  if (settings.direction === "mix") return Math.random() < 0.5 ? "de-en" : "en-de";
+  return settings.direction;
+}
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startQuiz() {
+  const pool = settings.scope === "weak" ? weakWords(stats, WORDS) : WORDS;
+  if (pool.length === 0) {
+    alert("Keine Wörter in dieser Auswahl. Wähle Alle Wörter.");
+    return;
+  }
+  repeatWrong = document.getElementById("repeat-wrong").checked;
+  quizQueue = shuffle(pool).map((w) => ({ word: w, direction: pickDirectionFor() }));
+  totalPlanned = quizQueue.length;
+  correctCount = 0;
+  wrongCount = 0;
+  showScreen("quiz");
+  nextQuestion();
+}
+
+function nextQuestion() {
+  if (quizQueue.length === 0) {
+    finishQuiz();
+    return;
+  }
+  currentItem = quizQueue.shift();
+  const { word, direction } = currentItem;
+  const askingGerman = direction === "de-en";
+  document.getElementById("prompt-label").textContent = askingGerman
+    ? "Deutsch – Antwort auf Englisch"
+    : "English – Antwort auf Deutsch";
+  document.getElementById("prompt-word").textContent = askingGerman ? word.de : word.en;
+  document.getElementById("feedback").classList.add("hidden");
+  document.getElementById("btn-next").classList.add("hidden");
+  document.getElementById("solution-word").classList.add("hidden");
+  document.getElementById("rate-row").classList.add("hidden");
+
+  const input = document.getElementById("answer-input");
+  if (settings.mode === "reveal") {
+    input.classList.add("hidden");
+    document.getElementById("btn-check").classList.add("hidden");
+    document.getElementById("btn-reveal").classList.remove("hidden");
+  } else {
+    input.classList.remove("hidden");
+    input.value = "";
+    input.disabled = false;
+    input.focus();
+    document.getElementById("btn-check").classList.remove("hidden");
+    document.getElementById("btn-reveal").classList.add("hidden");
+  }
+
+  const doneSoFar = totalPlanned - quizQueue.length - 1;
+  document.getElementById("progress-label").textContent =
+    `Frage ${doneSoFar + 1} von ${totalPlanned}`;
+}
+
+function revealAnswer() {
+  const { word, direction } = currentItem;
+  const solution = direction === "de-en" ? word.en : word.de;
+  const solutionEl = document.getElementById("solution-word");
+  solutionEl.textContent = solution;
+  solutionEl.classList.remove("hidden");
+  document.getElementById("btn-reveal").classList.add("hidden");
+  document.getElementById("rate-row").classList.remove("hidden");
+}
+
+function rateSelf(ok) {
+  const { word, direction } = currentItem;
+  recordAttempt(stats, word.id, ok);
+  if (ok) {
+    correctCount++;
+  } else {
+    wrongCount++;
+    if (repeatWrong) quizQueue.push({ word, direction });
+  }
+  document.getElementById("rate-row").classList.add("hidden");
+  document.getElementById("btn-next").classList.remove("hidden");
+}
+
+document.getElementById("btn-reveal").addEventListener("click", revealAnswer);
+document.getElementById("btn-rate-correct").addEventListener("click", () => rateSelf(true));
+document.getElementById("btn-rate-wrong").addEventListener("click", () => rateSelf(false));
+
+function isCorrectAnswer(input, solution) {
+  const norm = (s) => s.toLowerCase().trim().replace(/\s+/g, " ");
+  const given = norm(input);
+  const variants = solution.split(",").map(norm);
+  return variants.includes(given);
+}
+
+function checkAnswer() {
+  const input = document.getElementById("answer-input");
+  const { word, direction } = currentItem;
+  const solution = direction === "de-en" ? word.en : word.de;
+  const ok = isCorrectAnswer(input.value, solution);
+
+  recordAttempt(stats, word.id, ok);
+  if (ok) {
+    correctCount++;
+  } else {
+    wrongCount++;
+    if (repeatWrong) quizQueue.push({ word, direction });
+  }
+
+  const fb = document.getElementById("feedback");
+  fb.classList.remove("hidden", "correct", "wrong");
+  fb.classList.add(ok ? "correct" : "wrong");
+  fb.textContent = ok ? "Richtig!" : `Leider falsch. Richtig: ${solution}`;
+
+  input.disabled = true;
+  document.getElementById("btn-check").classList.add("hidden");
+  document.getElementById("btn-next").classList.remove("hidden");
+}
+
+document.getElementById("btn-check").addEventListener("click", checkAnswer);
+document.getElementById("answer-input").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    const checkBtn = document.getElementById("btn-check");
+    if (!checkBtn.classList.contains("hidden")) checkAnswer();
+    else document.getElementById("btn-next").click();
+  }
+});
+document.getElementById("btn-next").addEventListener("click", nextQuestion);
+document.getElementById("btn-quit").addEventListener("click", finishQuiz);
+
+function finishQuiz() {
+  document.getElementById("result-correct").textContent = correctCount;
+  document.getElementById("result-wrong").textContent = wrongCount;
+  showScreen("result");
+}
+</script>
+</body>
+</html>
